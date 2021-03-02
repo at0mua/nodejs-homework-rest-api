@@ -1,14 +1,31 @@
-const fs = require('fs/promises')
-const path = require('path')
+const db = require('../db/db')
 const HttpCode = require('../helpers/status')
 
-const contactsPath = path.resolve('db', 'contacts.json')
+const { ObjectID } = require('mongodb')
+
+const getCollection = async (db, name) => {
+  const client = await db
+  const collection = await client.db().collection(name)
+  return collection
+}
+
+const addContact = async (req, res, next) => {
+  try {
+    const collection = await getCollection(db, 'contacts')
+    await collection.insertOne({ ...req.body })
+
+    res.status(HttpCode.CREATED).json({ message: 'Contact added' })
+  } catch (err) {
+    next(err)
+  }
+}
 
 const listContacts = async (_req, res, next) => {
   try {
-    const contacts = await fs.readFile(contactsPath, 'utf-8')
-    const parsedContacts = JSON.parse(contacts)
-    res.status(HttpCode.OK).json(parsedContacts)
+    const collection = await getCollection(db, 'contacts')
+    const results = await collection.find({}).toArray()
+
+    res.status(HttpCode.OK).json(results)
   } catch (err) {
     next(err)
   }
@@ -16,14 +33,41 @@ const listContacts = async (_req, res, next) => {
 
 const getContactById = async (req, res, next) => {
   try {
+    const collection = await getCollection(db, 'contacts')
+
     const { contactId } = req.params
-    const contacts = await fs.readFile(contactsPath, 'utf-8')
-    const parsedContacts = JSON.parse(contacts)
-    const contactById = parsedContacts.find(
-      contact => contact.id === Number(contactId),
+
+    const objectId = new ObjectID(contactId)
+    console.log(objectId.getTimestamp())
+
+    const [result] = await collection.find({ _id: objectId }).toArray()
+
+    if (result) {
+      return res.status(HttpCode.OK).json(result)
+    } else {
+      return res
+        .status(HttpCode.NOT_FOUND)
+        .json({ message: 'Contact not Found' })
+    }
+  } catch (err) {
+    next(err)
+  }
+}
+
+const updateContact = async (req, res, next) => {
+  try {
+    const collection = await getCollection(db, 'contacts')
+    const { contactId } = req.params
+    const objectId = new ObjectID(contactId)
+    const result = await collection.findOneAndUpdate(
+      { _id: objectId },
+      { $set: req.body },
     )
-    if (contactById) {
-      return res.status(HttpCode.OK).json(contactById)
+
+    if (result.value) {
+      return res
+        .status(HttpCode.OK)
+        .json({ message: 'Contact updated successfully' })
     } else {
       return res
         .status(HttpCode.NOT_FOUND)
@@ -36,68 +80,19 @@ const getContactById = async (req, res, next) => {
 
 const removeContact = async (req, res, next) => {
   try {
+    const collection = await getCollection(db, 'contacts')
     const { contactId } = req.params
-    const contacts = await fs.readFile(contactsPath, 'utf-8')
-    const parsedContacts = JSON.parse(contacts)
-    const contactIndex = parsedContacts.findIndex(
-      contact => contact.id === Number(contactId),
-    )
-    if (contactIndex !== -1) {
-      parsedContacts.splice(contactIndex, 1)
-      fs.writeFile(contactsPath, JSON.stringify(parsedContacts, null, 2))
+    const objectId = new ObjectID(contactId)
+    const { value: result } = await collection.findOneAndDelete({
+      _id: objectId,
+    })
+
+    if (result) {
       return res.status(HttpCode.OK).json({ message: 'Contact deleted' })
     } else {
       return res
         .status(HttpCode.NOT_FOUND)
-        .json({ message: 'Contact not Found' })
-    }
-  } catch (err) {
-    next(err)
-  }
-}
-
-const addContact = async (req, res, next) => {
-  const newContact = req.body
-  try {
-    const contacts = await fs.readFile(contactsPath, 'utf-8')
-    const parsedContacts = JSON.parse(contacts)
-    const id = parsedContacts.length > 0 ? [...parsedContacts].pop().id + 1 : 1
-    fs.writeFile(
-      contactsPath,
-      JSON.stringify([...parsedContacts, { id, ...newContact }], null, 2),
-    )
-    res.status(HttpCode.CREATED).json(newContact)
-  } catch (err) {
-    next(err)
-  }
-}
-
-const updateContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params
-    const contacts = await fs.readFile(contactsPath, 'utf-8')
-    const parsedContacts = JSON.parse(contacts)
-    const contactIndex = parsedContacts.findIndex(
-      contact => contact.id === Number(contactId),
-    )
-    if (contactIndex !== -1) {
-      const updatedContact = {
-        ...parsedContacts[contactIndex],
-        ...req.body,
-      }
-      const updatedContacts = [
-        ...parsedContacts.slice(0, contactIndex),
-        updatedContact,
-        ...parsedContacts.slice(contactIndex + 1),
-      ]
-      fs.writeFile(contactsPath, JSON.stringify(updatedContacts, null, 2))
-      return res
-        .status(HttpCode.OK)
-        .json({ message: 'Contact updated successfully' })
-    } else {
-      return res
-        .status(HttpCode.NOT_FOUND)
-        .json({ message: 'Contact not Found' })
+        .json({ message: 'Contact not found' })
     }
   } catch (err) {
     next(err)
