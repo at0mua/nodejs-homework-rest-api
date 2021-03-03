@@ -7,7 +7,7 @@ const {
   removeContact,
   addContact,
   updateContact,
-} = require('../../model/index')
+} = require('../../model/contactsController')
 const { validateAddContact, validateUpdateContact } = require('./validator')
 
 router.get('/', listContacts)
