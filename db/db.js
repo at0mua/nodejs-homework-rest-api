@@ -22,8 +22,6 @@ mongoose.connection.on('disconnected', () => {
 })
 
 process.on('SIGINT', async () => {
-  //   const client = await db
-  //   client.close()
   await mongoose.connection.close()
   console.log('Connection for db closed')
   process.exit(1)

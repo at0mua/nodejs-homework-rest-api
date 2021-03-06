@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
-const { Schema, model } = mongoose
+const { Schema, model, SchemaTypes } = mongoose
+
+const { Subscription } = require('../../helpers/constants')
 
 const contactSchema = new Schema(
   {
@@ -10,9 +12,17 @@ const contactSchema = new Schema(
       unique: true,
     },
     phone: { type: String, required: [true, 'Set contact phone'] },
-    subscription: { type: String, default: 'free' },
-    password: { type: String, default: 'password' },
-    token: { type: String, default: '' },
+    subscription: {
+      type: String,
+      enum: [Subscription.FREE, Subscription.PRO, Subscription.PREMIUM],
+      default: Subscription.FREE,
+    },
+    // password: { type: String, default: 'password' },
+    // token: { type: String, default: '' },
+    owner: {
+      type: SchemaTypes.ObjectId,
+      ref: 'User',
+    },
   },
   {
     versionKey: false,

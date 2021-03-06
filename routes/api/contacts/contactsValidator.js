@@ -1,13 +1,13 @@
 const Joi = require('joi')
-const HttpCode = require('../../helpers/status')
+const HttpCode = require('../../../helpers/constants')
 
 const schemaAddContact = Joi.object({
   name: Joi.string().min(3).max(50).required(),
   email: Joi.string().min(3).max(50).required(),
   phone: Joi.string().min(3).max(50).required(),
   subscription: Joi.string().min(3).max(50).optional(),
-  password: Joi.string().min(3).max(50).optional(),
-  token: Joi.string().min(3).max(50).optional(),
+  // password: Joi.string().min(3).max(50).optional(),
+  // token: Joi.string().min(3).max(50).optional(),
 })
 
 const schemaUpdateContact = Joi.object({
@@ -15,8 +15,8 @@ const schemaUpdateContact = Joi.object({
   email: Joi.string().min(3).max(50).optional(),
   phone: Joi.string().min(3).max(50).optional(),
   subscription: Joi.string().min(3).max(50).optional(),
-  password: Joi.string().min(3).max(50).optional(),
-  token: Joi.string().min(3).max(50).optional(),
+  // password: Joi.string().min(3).max(50).optional(),
+  // token: Joi.string().min(3).max(50).optional(),
 })
 module.exports.validateAddContact = (req, res, next) => {
   const { error } = schemaAddContact.validate(req.body)
