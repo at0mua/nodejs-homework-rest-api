@@ -4,15 +4,6 @@ const findUserByEmail = async email => {
   return await User.findOne({ email })
 }
 
-// const findUserByEmail = async email => {
-//   try {
-//     const result = await User.findOne({ email })
-//     return result
-//   } catch (err) {
-//     return console.error(err.message)
-//   }
-// }
-
 const findUserById = async id => {
   return await User.findOne({ _id: id })
 }

@@ -17,8 +17,6 @@ const contactSchema = new Schema(
       enum: [Subscription.FREE, Subscription.PRO, Subscription.PREMIUM],
       default: Subscription.FREE,
     },
-    // password: { type: String, default: 'password' },
-    // token: { type: String, default: '' },
     owner: {
       type: SchemaTypes.ObjectId,
       ref: 'User',

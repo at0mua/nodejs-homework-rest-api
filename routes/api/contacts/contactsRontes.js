@@ -13,11 +13,15 @@ const {
   validateUpdateContact,
 } = require('./contactsValidator')
 
-router.get('/', listContacts).post('/', validateAddContact, addContact)
+const guard = require('../../../helpers/guard')
 
 router
-  .get('/:contactId', getContactById)
-  .delete('/:contactId', removeContact)
-  .patch('/:contactId', validateUpdateContact, updateContact)
+  .get('/', guard, listContacts)
+  .post('/', guard, validateAddContact, addContact)
+
+router
+  .get('/:contactId', guard, getContactById)
+  .delete('/:contactId', guard, removeContact)
+  .patch('/:contactId', guard, validateUpdateContact, updateContact)
 
 module.exports = router

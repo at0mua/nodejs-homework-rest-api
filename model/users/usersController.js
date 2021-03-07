@@ -32,25 +32,35 @@ const login = async (req, res, next) => {
     const { email, password } = req.body
 
     const user = await Users.findUserByEmail(email)
-    const validPassword = await user.validPassword(password)
 
-    if (!user || !validPassword) {
-      return res
-        .status(HttpCode.UNAUTHORIZED)
-        .json({ message: 'Invalid credentionals ' })
+    if (user) {
+      const validPassword = await user.validPassword(password)
+      if (validPassword) {
+        const userId = user._id
+        const payload = { userId }
+        const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '2h' })
+        await Users.updateToken(userId, token)
+
+        return res.status(HttpCode.OK).json({ token })
+      }
     }
 
-    const userId = user._id
-    const payload = { userId }
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '2h' })
-    await Users.updateToken(userId, token)
-
-    res.status(HttpCode.OK).json({ token })
+    return res
+      .status(HttpCode.UNAUTHORIZED)
+      .json({ message: 'Invalid credentionals' })
   } catch (err) {
     next(err)
   }
 }
 
-const logout = async (req, res, next) => {}
+const logout = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+    await Users.updateToken(userId, null)
+    return res.status(HttpCode.NO_CONTENT).json()
+  } catch (err) {
+    next(err)
+  }
+}
 
 module.exports = { registration, login, logout }
