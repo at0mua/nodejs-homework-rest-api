@@ -1,4 +1,5 @@
 const Contact = require('./contactsSchema')
+const Contacts = require('./contactsModel')
 const { HttpCode } = require('../../helpers/constants')
 
 const addContact = async (req, res, next) => {
@@ -15,12 +16,9 @@ const addContact = async (req, res, next) => {
 const listContacts = async (req, res, next) => {
   try {
     const userId = req.user.id
-    const results = await Contact.find({ owner: userId }).populate({
-      path: 'owner',
-      select: 'email',
-    })
+    const results = await Contacts.getAllContacts(userId, req.query)
 
-    res.status(HttpCode.OK).json(results)
+    res.status(HttpCode.OK).json({ ...results })
   } catch (err) {
     next(err)
   }
@@ -55,7 +53,7 @@ const updateContact = async (req, res, next) => {
     const userId = req.user.id
     const { contactId } = req.params
 
-    const result = await Contact.findByIdAndUpdate(
+    const result = await Contact.findOneAndUpdate(
       { _id: contactId, owner: userId },
       { ...req.body },
     )
@@ -78,7 +76,7 @@ const removeContact = async (req, res, next) => {
   try {
     const userId = req.user.id
     const { contactId } = req.params
-    const result = await Contact.findByIdAndDelete({
+    const result = await Contact.findOneAndDelete({
       _id: contactId,
       owner: userId,
     })

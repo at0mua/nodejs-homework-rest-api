@@ -12,7 +12,7 @@ const registration = async (req, res, next) => {
     if (user) {
       return res
         .status(HttpCode.CONFLICT)
-        .json({ message: 'Email is alredy in uses' })
+        .json({ message: 'Email is alredy in use' })
     }
 
     const newUser = await Users.createUser({ email, password })
@@ -37,7 +37,7 @@ const login = async (req, res, next) => {
     if (!user || !validPassword) {
       return res
         .status(HttpCode.UNAUTHORIZED)
-        .json({ message: 'Invalid credentionals' })
+        .json({ message: 'Email or password is wrong' })
     }
 
     const userId = user._id
@@ -45,7 +45,13 @@ const login = async (req, res, next) => {
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '2h' })
     await Users.updateToken(userId, token)
 
-    return res.status(HttpCode.OK).json({ token })
+    return res.status(HttpCode.OK).json({
+      token: token,
+      user: {
+        email: email,
+        subscription: user.subscription,
+      },
+    })
   } catch (err) {
     next(err)
   }
