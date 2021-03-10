@@ -3,6 +3,7 @@ const logger = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 
+const { reguestLimit } = require('./helpers/rate-limit')
 const { HttpCode } = require('./helpers/constants')
 
 const contactsRouter = require('./routes/api/contacts/contactsRontes')
@@ -17,6 +18,7 @@ app.use(logger(formatsLogger))
 app.use(cors())
 app.use(express.json())
 
+app.use('/api/', reguestLimit)
 app.use('/api/users', usersRouter)
 app.use('/api/contacts', contactsRouter)
 
