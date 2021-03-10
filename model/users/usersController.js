@@ -67,4 +67,41 @@ const logout = async (req, res, next) => {
   }
 }
 
-module.exports = { registration, login, logout }
+const currentUser = async (req, res, next) => {
+  try {
+    const token = req.user.token
+    const user = await Users.findUserByToken(token)
+
+    return res.status(HttpCode.OK).json({
+      user: {
+        email: user.email,
+        subscription: user.subscription,
+      },
+    })
+  } catch (e) {
+    next(e)
+  }
+}
+
+const updateSub = async (req, res, next) => {
+  const id = req.user.id
+  const sub = req.body.subscription
+  try {
+    const user = await Users.findUserById(id)
+    if (user.subscription === sub) {
+      return res
+        .status(HttpCode.BAD_REQUEST)
+        .json({ message: `You already have ${sub} subscription.` })
+    }
+
+    await Users.updateUserSub(id, sub)
+    const newUser = await Users.findUserById(id)
+    return res.status(HttpCode.OK).json({
+      message: `${newUser.email} changed subscription to ${newUser.subscription}`,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = { registration, login, logout, currentUser, updateSub }

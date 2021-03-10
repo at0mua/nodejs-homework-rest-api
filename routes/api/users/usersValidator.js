@@ -25,6 +25,10 @@ const schemaLoginUser = Joi.object({
   token: Joi.string().optional(),
 })
 
+const schemaUpdateSub = Joi.object({
+  subscription: Joi.any().valid('free', 'pro', 'premium').required(),
+})
+
 module.exports.validateCreateUser = (req, res, next) => {
   const { error } = schemaCreateUser.validate(req.body)
   if (error) {
@@ -37,6 +41,16 @@ module.exports.validateCreateUser = (req, res, next) => {
 
 module.exports.validateLoginUser = (req, res, next) => {
   const { error } = schemaLoginUser.validate(req.body)
+  if (error) {
+    return res
+      .status(HttpCode.BAD_REQUEST)
+      .json({ message: 'Missing required fields' })
+  }
+  next()
+}
+
+module.exports.validateUpdateSub = (req, res, next) => {
+  const { error } = schemaUpdateSub.validate(req.body)
   if (error) {
     return res
       .status(HttpCode.BAD_REQUEST)
