@@ -32,22 +32,20 @@ const login = async (req, res, next) => {
     const { email, password } = req.body
 
     const user = await Users.findUserByEmail(email)
+    const validPassword = await user?.validPassword(password)
 
-    if (user) {
-      const validPassword = await user.validPassword(password)
-      if (validPassword) {
-        const userId = user._id
-        const payload = { userId }
-        const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '2h' })
-        await Users.updateToken(userId, token)
-
-        return res.status(HttpCode.OK).json({ token })
-      }
+    if (!user || !validPassword) {
+      return res
+        .status(HttpCode.UNAUTHORIZED)
+        .json({ message: 'Invalid credentionals' })
     }
 
-    return res
-      .status(HttpCode.UNAUTHORIZED)
-      .json({ message: 'Invalid credentionals' })
+    const userId = user._id
+    const payload = { userId }
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '2h' })
+    await Users.updateToken(userId, token)
+
+    return res.status(HttpCode.OK).json({ token })
   } catch (err) {
     next(err)
   }
