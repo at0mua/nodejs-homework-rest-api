@@ -60,7 +60,6 @@ module.exports.validateUpdateSub = (req, res, next) => {
 }
 
 module.exports.validateUploadAvatar = (req, res, next) => {
-  console.log(req.file)
   if (!req.file) {
     return res
       .status(HttpCode.BAD_REQUEST)
