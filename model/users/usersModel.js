@@ -25,6 +25,10 @@ const findUserByToken = async token => {
   return await User.findOne({ token })
 }
 
+const updateAvatar = async (id, avatarUrl) => {
+  return await User.updateOne({ _id: id }, { avatarUrl: avatarUrl })
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -32,4 +36,5 @@ module.exports = {
   updateToken,
   updateUserSub,
   findUserByToken,
+  updateAvatar,
 }

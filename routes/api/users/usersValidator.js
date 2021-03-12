@@ -32,9 +32,9 @@ const schemaUpdateSub = Joi.object({
 module.exports.validateCreateUser = (req, res, next) => {
   const { error } = schemaCreateUser.validate(req.body)
   if (error) {
-    return res
-      .status(HttpCode.BAD_REQUEST)
-      .json({ message: 'Missing required fields' })
+    return res.status(HttpCode.BAD_REQUEST).json({
+      message: 'Missing required fields. Enter your email and password',
+    })
   }
   next()
 }
@@ -54,7 +54,17 @@ module.exports.validateUpdateSub = (req, res, next) => {
   if (error) {
     return res
       .status(HttpCode.BAD_REQUEST)
-      .json({ message: 'Missing required fields' })
+      .json({ message: 'Missing required fields. Enter new subscription' })
+  }
+  next()
+}
+
+module.exports.validateUploadAvatar = (req, res, next) => {
+  console.log(req.file)
+  if (!req.file) {
+    return res
+      .status(HttpCode.BAD_REQUEST)
+      .json({ message: 'Field of avatar fith file not found' })
   }
   next()
 }
