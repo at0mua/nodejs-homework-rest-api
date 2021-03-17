@@ -5,14 +5,14 @@ const schemaAddContact = Joi.object({
   name: Joi.string().min(3).max(50).required(),
   email: Joi.string().min(3).max(50).required(),
   phone: Joi.string().min(3).max(50).required(),
-  subscription: Joi.string().min(3).max(50).optional(),
+  subscription: Joi.any().valid('free', 'pro', 'premium').optional(),
 })
 
 const schemaUpdateContact = Joi.object({
   name: Joi.string().min(3).max(50).optional(),
   email: Joi.string().min(3).max(50).optional(),
   phone: Joi.string().min(3).max(50).optional(),
-  subscription: Joi.string().min(3).max(50).optional(),
+  subscription: Joi.any().valid('free', 'pro', 'premium').optional(),
 })
 module.exports.validateAddContact = (req, res, next) => {
   const { error } = schemaAddContact.validate(req.body)

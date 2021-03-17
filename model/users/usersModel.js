@@ -34,7 +34,7 @@ const updateAvatar = async (id, avatarUrl) => {
 }
 
 const saveAvatarToStatick = async req => {
-  const id = req.user.id
+  const userId = req.user._id
   const AVATARS_OF_USERS = process.env.AVATARS_OF_USERS
   const pathFile = req.file.path
   const newNameAvatar = `${Date.now()}-${req.file.originalname}`
@@ -43,12 +43,15 @@ const saveAvatarToStatick = async req => {
     .autocrop()
     .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
     .writeAsync(pathFile)
-  await createFolderIsExist(path.join(AVATARS_OF_USERS, id))
-  await fs.rename(pathFile, path.join(AVATARS_OF_USERS, id, newNameAvatar))
-  const avatarUrl = path.normalize(path.join(id, newNameAvatar))
+  await createFolderIsExist(path.join(`${AVATARS_OF_USERS}`, `${userId}`))
+  await fs.rename(
+    `${pathFile}`,
+    path.join(`${AVATARS_OF_USERS}`, `${userId}`, `${newNameAvatar}`),
+  )
+  const avatarUrl = path.normalize(path.join(`${userId}`, `${newNameAvatar}`))
   try {
     await fs.unlink(
-      path.join(process.cwd(), AVATARS_OF_USERS, req.user.avatarUrl),
+      path.join(process.cwd(), `${AVATARS_OF_USERS}`, `${req.user.avatarUrl}`),
     )
   } catch (err) {
     console.log(err.message)

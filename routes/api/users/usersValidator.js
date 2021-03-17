@@ -3,24 +3,28 @@ const { HttpCode } = require('../../../helpers/constants')
 
 const schemaCreateUser = Joi.object({
   email: Joi.string()
+    .min(8)
+    .max(50)
     .email({
       minDomainSegments: 2,
       tlds: { allow: ['com', 'net'] },
     })
     .required(),
-  password: Joi.string().required(),
+  password: Joi.string().min(4).max(50).required(),
   subscription: Joi.string().min(3).max(50).optional(),
   token: Joi.string().optional(),
 })
 
 const schemaLoginUser = Joi.object({
   email: Joi.string()
+    .min(8)
+    .max(50)
     .email({
       minDomainSegments: 2,
       tlds: { allow: ['com', 'net'] },
     })
     .required(),
-  password: Joi.string().required(),
+  password: Joi.string().min(4).max(50).required(),
   subscription: Joi.string().min(3).max(50).optional(),
   token: Joi.string().optional(),
 })

@@ -11,21 +11,21 @@ const User = {
 const users = []
 users[0] = User
 
-const newUser = { email: 'test@test.com', password: '123456' }
+const newUser = { email: 'test@test.com', password: '12345678' }
 
 const contacts = [
   {
     _id: '6044e58281f9b813a089c88c',
     subscription: 'free',
-    name: 'Test',
-    email: 'Test@mail.com',
+    name: 'Test1',
+    email: 'Test@gmail.com',
     phone: '(123) 456-7890',
     owner: '6044cac08c8cf733a460da42',
   },
   {
     _id: '6044e6b581f9b813a089c88d',
     subscription: 'free',
-    name: 'Test',
+    name: 'Test2',
     email: 'Test@mail.com',
     phone: '(123) 456-7890',
     owner: '6043ec0a8e1da84064043cca',
