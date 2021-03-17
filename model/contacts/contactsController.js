@@ -1,13 +1,12 @@
-const Contact = require('./contactsSchema')
 const Contacts = require('./contactsModel')
 const { HttpCode } = require('../../helpers/constants')
 
 const addContact = async (req, res, next) => {
   try {
     const userId = req.user.id
-    await Contact.create({ ...req.body, owner: userId })
+    const contact = await Contacts.addContact(req.body, userId)
 
-    res.status(HttpCode.CREATED).json({ message: 'Contact added' })
+    res.status(HttpCode.CREATED).json({ message: 'Contact added', contact })
   } catch (err) {
     next(err)
   }
@@ -28,16 +27,10 @@ const getContactById = async (req, res, next) => {
   try {
     const userId = req.user.id
     const { contactId } = req.params
-    const result = await Contact.findById({
-      _id: contactId,
-      owner: userId,
-    }).populate({
-      path: 'owner',
-      select: 'email',
-    })
+    const contact = await Contacts.getContactById(contactId, userId)
 
-    if (result) {
-      return res.status(HttpCode.OK).json(result)
+    if (contact) {
+      return res.status(HttpCode.OK).json(contact)
     } else {
       return res
         .status(HttpCode.NOT_FOUND)
@@ -53,15 +46,12 @@ const updateContact = async (req, res, next) => {
     const userId = req.user.id
     const { contactId } = req.params
 
-    const result = await Contact.findOneAndUpdate(
-      { _id: contactId, owner: userId },
-      { ...req.body },
-    )
+    const contact = await Contacts.updateContact(contactId, req.body, userId)
 
-    if (result) {
+    if (contact) {
       return res
         .status(HttpCode.OK)
-        .json({ message: 'Contact updated successfully' })
+        .json({ message: 'Contact updated successfully', contact })
     } else {
       return res
         .status(HttpCode.NOT_FOUND)
@@ -76,12 +66,9 @@ const removeContact = async (req, res, next) => {
   try {
     const userId = req.user.id
     const { contactId } = req.params
-    const result = await Contact.findOneAndDelete({
-      _id: contactId,
-      owner: userId,
-    })
+    const contact = await Contacts.removeContact(contactId, userId)
 
-    if (result) {
+    if (contact) {
       return res.status(HttpCode.OK).json({ message: 'Contact deleted' })
     } else {
       return res
