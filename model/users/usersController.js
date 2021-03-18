@@ -20,6 +20,7 @@ const registration = async (req, res, next) => {
     res.status(HttpCode.CREATED).json({
       id: newUser.id,
       email: newUser.email,
+      avatarUrl: newUser.avatarUrl,
       message: 'User created successfully',
     })
   } catch (err) {
@@ -59,7 +60,7 @@ const login = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    const userId = req.user.id
+    const userId = req.user._id
     await Users.updateToken(userId, null)
     return res.status(HttpCode.NO_CONTENT).json()
   } catch (err) {
@@ -84,18 +85,18 @@ const currentUser = async (req, res, next) => {
 }
 
 const updateSub = async (req, res, next) => {
-  const id = req.user.id
+  const userId = req.user._id
   const sub = req.body.subscription
   try {
-    const user = await Users.findUserById(id)
+    const user = await Users.findUserById(userId)
     if (user.subscription === sub) {
       return res
         .status(HttpCode.BAD_REQUEST)
         .json({ message: `You already have ${sub} subscription.` })
     }
 
-    await Users.updateUserSub(id, sub)
-    const newUser = await Users.findUserById(id)
+    await Users.updateUserSub(userId, sub)
+    const newUser = await Users.findUserById(userId)
     return res.status(HttpCode.OK).json({
       message: `${newUser.email} changed subscription to ${newUser.subscription}`,
     })
@@ -104,4 +105,22 @@ const updateSub = async (req, res, next) => {
   }
 }
 
-module.exports = { registration, login, logout, currentUser, updateSub }
+const avatars = async (req, res, next) => {
+  try {
+    const userId = req.user._id
+    const avatarUrl = await Users.saveAvatarToStatick(req)
+    await Users.updateAvatar(userId, avatarUrl)
+    return res.status(HttpCode.OK).json(avatarUrl)
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports = {
+  registration,
+  login,
+  logout,
+  currentUser,
+  updateSub,
+  avatars,
+}

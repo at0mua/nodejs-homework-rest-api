@@ -1,5 +1,10 @@
 const Contact = require('./contactsSchema')
 
+const addContact = async (body, userId) => {
+  const result = await Contact.create({ ...body, owner: userId })
+  return result
+}
+
 const getAllContacts = async (
   userId,
   { sortBy, sortByDesc, sub, filter, page = '1', limit = '20' },
@@ -28,4 +33,38 @@ const getAllContacts = async (
   return { total: total.toString(), page, limit, contacts }
 }
 
-module.exports = { getAllContacts }
+const getContactById = async (contactId, userId) => {
+  const result = await Contact.findOne({
+    _id: contactId,
+    owner: userId,
+  }).populate({
+    path: 'owner',
+    select: 'email subscription -_id',
+  })
+  return result
+}
+
+const updateContact = async (contactId, body, userId) => {
+  const result = await Contact.findOneAndUpdate(
+    { _id: contactId, owner: userId },
+    { ...body },
+    { new: true },
+  )
+  return result
+}
+
+const removeContact = async (contactId, userId) => {
+  const result = await Contact.findOneAndDelete({
+    _id: contactId,
+    owner: userId,
+  })
+  return result
+}
+
+module.exports = {
+  getAllContacts,
+  addContact,
+  getContactById,
+  updateContact,
+  removeContact,
+}

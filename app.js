@@ -2,6 +2,8 @@ const express = require('express')
 const logger = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
+const path = require('path')
+require('dotenv').config()
 
 const { reguestLimit } = require('./helpers/rate-limit')
 const { HttpCode } = require('./helpers/constants')
@@ -11,10 +13,13 @@ const usersRouter = require('./routes/api/users/usersRoutes')
 
 const app = express()
 
+const AVATARS_OF_USERS = process.env.AVATARS_OF_USERS
+app.use(express.static(path.join(__dirname, AVATARS_OF_USERS)))
+
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
 app.use(helmet())
-app.use(logger(formatsLogger))
+app.get('env') !== 'test' && app.use(logger(formatsLogger))
 app.use(cors())
 app.use(express.json({ limit: 10000 }))
 
