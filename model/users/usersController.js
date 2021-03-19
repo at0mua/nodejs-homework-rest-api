@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken')
 const Users = require('./usersModel')
 const { HttpCode } = require('../../helpers/constants')
+const { nanoid } = require('nanoid')
 require('dotenv').config()
+
+const EmailService = require('../../services/email')
+
 const SECRET_KEY = process.env.JWT_SECRET
 
 const registration = async (req, res, next) => {
@@ -12,13 +16,22 @@ const registration = async (req, res, next) => {
     if (user) {
       return res
         .status(HttpCode.CONFLICT)
-        .json({ message: 'Email is alredy in use' })
+        .json({ message: 'Email is already in use' })
     }
 
-    const newUser = await Users.createUser({ email, password })
+    const verificationToken = nanoid()
+    const emailService = new EmailService(process.env.NODE_ENV)
+    await emailService.sendEmail(verificationToken, email)
+
+    const newUser = await Users.createUser({
+      email,
+      password,
+      verify: false,
+      verificationToken,
+    })
 
     res.status(HttpCode.CREATED).json({
-      id: newUser.id,
+      id: newUser._id,
       email: newUser.email,
       avatarUrl: newUser.avatarUrl,
       message: 'User created successfully',
@@ -39,6 +52,11 @@ const login = async (req, res, next) => {
       return res
         .status(HttpCode.UNAUTHORIZED)
         .json({ message: 'Email or password is wrong' })
+    }
+    if (!user.verification) {
+      return res
+        .status(HttpCode.UNAUTHORIZED)
+        .json({ message: 'You have not confirmed your email' })
     }
 
     const userId = user._id
@@ -108,9 +126,27 @@ const updateSub = async (req, res, next) => {
 const avatars = async (req, res, next) => {
   try {
     const userId = req.user._id
-    const avatarUrl = await Users.saveAvatarToStatick(req)
+    const avatarUrl = await Users.saveAvatarToStatic(req)
     await Users.updateAvatar(userId, avatarUrl)
     return res.status(HttpCode.OK).json(avatarUrl)
+  } catch (err) {
+    next(err)
+  }
+}
+
+const verification = async (req, res, next) => {
+  try {
+    const user = await Users.findByVerificationToken(
+      req.params.verificationToken,
+    )
+    if (user) {
+      const userId = user._id
+      await Users.updateVerificationToken(userId, true, null)
+      return res
+        .status(HttpCode.OK)
+        .json({ message: 'Verification was successful' })
+    }
+    return res.status(HttpCode.NOT_FOUND).json({ message: 'User not found' })
   } catch (err) {
     next(err)
   }
@@ -123,4 +159,5 @@ module.exports = {
   currentUser,
   updateSub,
   avatars,
+  verification,
 }

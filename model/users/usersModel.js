@@ -12,8 +12,13 @@ const findUserById = async id => {
   return await User.findOne({ _id: id })
 }
 
-const createUser = async ({ email, password }) => {
-  const user = new User({ email, password })
+const createUser = async ({
+  email,
+  password,
+  verification,
+  verificationToken,
+}) => {
+  const user = new User({ email, password, verification, verificationToken })
   return await user.save()
 }
 
@@ -33,7 +38,7 @@ const updateAvatar = async (id, avatarUrl) => {
   return await User.updateOne({ _id: id }, { avatarUrl: avatarUrl })
 }
 
-const saveAvatarToStatick = async req => {
+const saveAvatarToStatic = async req => {
   const userId = req.user._id
   const AVATARS_OF_USERS = process.env.AVATARS_OF_USERS
   const pathFile = req.file.path
@@ -59,6 +64,17 @@ const saveAvatarToStatick = async req => {
   return avatarUrl
 }
 
+const findByVerificationToken = async verificationToken => {
+  return await User.findOne({ verificationToken })
+}
+
+const updateVerificationToken = async (id, verification, verificationToken) => {
+  return await User.findOneAndUpdate(
+    { _id: id },
+    { verification, verificationToken },
+  )
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -67,5 +83,7 @@ module.exports = {
   updateUserSub,
   findUserByToken,
   updateAvatar,
-  saveAvatarToStatick,
+  saveAvatarToStatic,
+  findByVerificationToken,
+  updateVerificationToken,
 }
