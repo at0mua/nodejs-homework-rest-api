@@ -8,6 +8,7 @@ const {
   currentUser,
   updateSub,
   avatars,
+  verification,
 } = require('../../../model/users/usersController')
 const {
   validateCreateUser,
@@ -30,5 +31,7 @@ router.patch(
   validateUploadAvatar,
   avatars,
 )
+
+router.get('/verification/:verificationToken', verification)
 
 module.exports = router

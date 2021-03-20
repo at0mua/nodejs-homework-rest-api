@@ -1,5 +1,5 @@
 const { Schema, model } = require('mongoose')
-const bcrytp = require('bcryptjs')
+const bcrypt = require('bcryptjs')
 const gravatar = require('gravatar')
 const SALT_WORK_FACTOR = 10
 
@@ -33,7 +33,15 @@ const userSchema = new Schema(
     },
     token: {
       type: String,
-      defaul: null,
+      default: null,
+    },
+    verification: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      required: [true, 'Verification token required'],
     },
   },
   {
@@ -47,13 +55,13 @@ userSchema.pre('save', async function (next) {
     return next()
   }
 
-  const salt = await bcrytp.genSalt(SALT_WORK_FACTOR)
-  this.password = await bcrytp.hash(this.password, salt, null)
+  const salt = await bcrypt.genSalt(SALT_WORK_FACTOR)
+  this.password = await bcrypt.hash(this.password, salt, null)
   next()
 })
 
 userSchema.methods.validPassword = async function (password) {
-  return await bcrytp.compare(password, this.password)
+  return await bcrypt.compare(password, this.password)
 }
 
 const userModel = model('User', userSchema)
